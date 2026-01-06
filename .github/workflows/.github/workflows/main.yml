@@ -1,0 +1,33 @@
+name: Stock Alerts
+on:
+  schedule:
+    - cron: '*/5 13-21 * * 1-5'
+  workflow_dispatch:
+
+jobs:
+  run-logic:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Tools
+        run: pip install yfinance pandas
+
+      - name: Run Script
+        env:
+          GMAIL_PASS: ${{ secrets.GMAIL_PASS }}
+        run: python EMA_bot.py
+
+      - name: Save Status
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+          git add status.json
+          git commit -m "Update status" || exit 0
+          git push
